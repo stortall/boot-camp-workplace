@@ -14,17 +14,16 @@ typedef struct struct_cell {
     std::vector<int> possibilites;
 }Cell;
 
-bool FindUnassignedLocation(Cell **puzzle, int &row, int &col);
-bool isSafe(Cell **puzzle, int row, int col, int num);
-void FindPossible(Cell **puzzle);
-void RemovePeerInRow(Cell **puzzle, int row, int num);
-void RemovePeerInCol(Cell **puzzle, int col, int num);
-void RemovePeerInBox(Cell **puzzle, int boxStartRow, int boxStartCol, int num);
-void printCell(Cell **puzzle, const int &row, const int &col);
-void setValue(Cell **puzzle, const int &row, const int &col);
+bool FindUnassignedLocation(Cell (&puzzle)[N][N], int &row, int &col);
+bool isSafe(Cell (&puzzle)[N][N], int row, int col, int num);
+void FindPossible(Cell (&puzzle)[N][N]);
+void RemovePeerInRow(Cell (&puzzle)[N][N], int row, int num);
+void RemovePeerInCol(Cell (&puzzle)[N][N], int col, int num);
+void RemovePeerInBox(Cell (&puzzle)[N][N], int boxStartRow, int boxStartCol, int num);
+void printCell(Cell (&puzzle)[N][N], const int &row, const int &col);
+void setValue(Cell (&puzzle)[N][N], const int &row, const int &col);
 
-
-void DeleteValueInVector(Cell **puzzle, const int &row, const int &col, const int &num) {
+void DeleteValueInVector(Cell (&puzzle)[N][N], const int &row, const int &col, const int &num) {
     for (unsigned i=0; i<puzzle[row][col].possibilites.size(); i++) {
         if (puzzle[row][col].possibilites[i] == num) {
             puzzle[row][col].possibilites.erase(puzzle[row][col].possibilites.begin() + i);
@@ -35,17 +34,17 @@ void DeleteValueInVector(Cell **puzzle, const int &row, const int &col, const in
     }
 }
 
-void RemovePeerInRow(Cell **puzzle, int row, int num) {
+void RemovePeerInRow(Cell (&puzzle)[N][N], int row, int num) {
     for (int col = 0; col < N; col++) {
         DeleteValueInVector(puzzle, row, col, num);
     }
 }
-void RemovePeerInCol(Cell **puzzle, int col, int num) {
+void RemovePeerInCol(Cell (&puzzle)[N][N], int col, int num) {
     for (int row = 0; row < N; row++) {
         DeleteValueInVector(puzzle, row, col, num);
     }
 }
-void RemovePeerInBox(Cell **puzzle, int boxStartRow, int boxStartCol, int num) {
+void RemovePeerInBox(Cell (&puzzle)[N][N], int boxStartRow, int boxStartCol, int num) {
     for (int row = 0; row < 3; row++) {
         for (int col = 0; col < 3; col++) {
             DeleteValueInVector(puzzle, row+boxStartRow, col+boxStartCol, num);
@@ -53,33 +52,33 @@ void RemovePeerInBox(Cell **puzzle, int boxStartRow, int boxStartCol, int num) {
     }
 }
 
-void removeFromPeers(Cell **puzzle, const int &row, const int &col, int &num) {
+void removeFromPeers(Cell (&puzzle)[N][N], const int &row, const int &col, int &num) {
     RemovePeerInRow(puzzle, row, num);
     RemovePeerInCol(puzzle, col, num);
     RemovePeerInBox(puzzle, row - row % 3 , col - col % 3, num);
 }
 
-void setValue(Cell **puzzle, const int &row, const int &col) {
+void setValue(Cell (&puzzle)[N][N], const int &row, const int &col) {
     int num = puzzle[row][col].possibilites[0];
     puzzle[row][col].value = num;
     puzzle[row][col].possibilites.clear();
     removeFromPeers(puzzle, row, col, num);
 }
 
-void FindPossible(Cell **puzzle) {
+void FindPossible(Cell (&puzzle)[N][N]) {
     int row, col;
     for (row = 0; row < N; row++) {
         for (col = 0; col < N; col++) {
             if (puzzle[row][col].value == UNASSIGNED) {
-                cout << "Visiting empty cell " << row << ":" << col << endl;
-                printCell(puzzle, row, col);
+                // cout << "Visiting empty cell " << row << ":" << col << endl;
+                // printCell(puzzle, row, col);
                 for (int num = 1; num <= 9; num++) {
                     if (!isSafe(puzzle, row, col, num)) {
                         DeleteValueInVector(puzzle, row, col, num);
                     }
                 }
             } else {
-                cout << "Visiting defined cell " << row << ":" << col << endl;
+                // cout << "Visiting defined cell " << row << ":" << col << endl;
                 int num = puzzle[row][col].value;
                 puzzle[row][col].possibilites.clear();
                 removeFromPeers(puzzle, row, col, num);
@@ -89,7 +88,7 @@ void FindPossible(Cell **puzzle) {
 
 }
 
-void printCell(Cell **puzzle, const int &row, const int &col) {
+void printCell(Cell (&puzzle)[N][N], const int &row, const int &col) {
     cout << row << ":" << col << ", ";
     cout << "Value: " << puzzle[row][col].value << ", ";
     cout << "possibilities: ";
@@ -99,7 +98,7 @@ void printCell(Cell **puzzle, const int &row, const int &col) {
     cout << endl;
 }
 
-void printCells(Cell **puzzle) {
+void printCells(Cell (&puzzle)[N][N]) {
     for (int row = 0; row < N; row++) {
         for (int col = 0; col < N; col++) {
             printCell(puzzle, row, col);
@@ -109,7 +108,7 @@ void printCells(Cell **puzzle) {
 
 /* assign values to all unassigned locations for Sudoku solution  
  */
-bool SolveSudoku(Cell **puzzle) {
+bool SolveSudoku(Cell (&puzzle)[N][N]) {
     int row, col;
     // row and int are assigned by reference in function
     // FindUnassignedLocation() 
@@ -130,7 +129,7 @@ bool SolveSudoku(Cell **puzzle) {
 }
 
 /* Searches the grid to find an entry that is still unassigned. */
-bool FindUnassignedLocation(Cell **puzzle, int &row, int &col) {
+bool FindUnassignedLocation(Cell (&puzzle)[N][N], int &row, int &col) {
     // row and col are passed by reference and are therefore assigned 
     // "in place" in stack memory. This is where the current worlking
     // cell is set.
@@ -146,7 +145,7 @@ bool FindUnassignedLocation(Cell **puzzle, int &row, int &col) {
 
 /* Returns whether any assigned entry in the specified row matches 
    the given number. */
-bool UsedInRow(Cell **puzzle, int row, int num) {
+bool UsedInRow(Cell (&puzzle)[N][N], int row, int num) {
     for (int col = 0; col < N; col++) {
         if (puzzle[row][col].value == num) {
             return true;
@@ -157,7 +156,7 @@ bool UsedInRow(Cell **puzzle, int row, int num) {
 
 /* Returns whether any assigned entry in the specified column matches 
    the given number. */
-bool UsedInCol(Cell **puzzle, int col, int num) {
+bool UsedInCol(Cell (&puzzle)[N][N], int col, int num) {
     for (int row = 0; row < N; row++) {
         if (puzzle[row][col].value == num) {
             return true;
@@ -168,7 +167,7 @@ bool UsedInCol(Cell **puzzle, int col, int num) {
 
 /* Returns whether any assigned entry within the specified 3x3 box matches 
    the given number. */
-bool UsedInBox(Cell **puzzle, int boxStartRow, int boxStartCol, int num) {
+bool UsedInBox(Cell (&puzzle)[N][N], int boxStartRow, int boxStartCol, int num) {
     for (int row = 0; row < 3; row++) {
         for (int col = 0; col < 3; col++) {
             if (puzzle[row+boxStartRow][col+boxStartCol].value == num) {
@@ -181,12 +180,12 @@ bool UsedInBox(Cell **puzzle, int boxStartRow, int boxStartCol, int num) {
 
 /* Returns whether it will be legal to assign num to the given row,col location. 
  */
-bool isSafe(Cell **puzzle, int row, int col, int num) {
+bool isSafe(Cell (&puzzle)[N][N], int row, int col, int num) {
     return !UsedInRow(puzzle, row, num) && !UsedInCol(puzzle, col, num) &&
        !UsedInBox(puzzle, row - row % 3 , col - col % 3, num);
 }
 
-void printGrid(Cell **puzzle) {
+void printGrid(Cell (&puzzle)[N][N]) {
     for (int row = 0; row < N; row++) {
         for (int col = 0; col < N; col++) {
             cout<<puzzle[row][col].value<<"  ";
@@ -203,8 +202,7 @@ void printGrid(Cell **puzzle) {
     cout<<endl;
 }
 
-void parse_csv(string filename, Cell **puzzle) {
-    // int grid[N][N];
+void parse_csv(string filename, Cell (&puzzle)[N][N]) {
     string line, colname;
     int val;
     ifstream myFile(filename);
@@ -214,17 +212,11 @@ void parse_csv(string filename, Cell **puzzle) {
     if (myFile.good()) {
         int row = 0;
         while(getline(myFile, line)) {
-            // cout << line << endl;
-            puzzle[row] = new Cell[N];
             stringstream ss(line);
             int col = 0;
             while(ss >> val){
                 puzzle[row][col].value = val;
-                if (val == 0) {
-                    for (size_t i = 1; i < 10; i++) {
-                        puzzle[row][col].possibilites.push_back(i);
-                    }
-                }
+                puzzle[row][col].possibilites = {1,2,3,4,5,6,7,8,9};
                 if(ss.peek() == ',') ss.ignore();
                 col++;
             }
@@ -239,14 +231,14 @@ int main(int argc, char *argv[]) {
         cout << "CSV file needed. Aborting..." << endl;
         return 1;
     } 
-    Cell **puzzle = new Cell*[N];
+    Cell puzzle[N][N];
     parse_csv(argv[1], puzzle);
-    // cout<<"~~~~~~~~~~~~ INPUT ~~~~~~~~~~~~"<<endl;
-    // printCells(puzzle);
+    cout<<"~~~~~~~~~~~~ INPUT ~~~~~~~~~~~~"<<endl;
+    printGrid(puzzle);
     FindPossible(puzzle);
-    cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
-    printCells(puzzle);
-    cout<<"~~~~~~~~~~~ After constraint propagation ~~~~~~~~~~~~"<<endl;
+    // cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+    // printCells(puzzle);
+    cout<<"~ After constraint propagation~"<<endl;
     printGrid(puzzle);
     // if (SolveSudoku(puzzle) == true) {
     //     cout<<"~~~~~~~~~~~ OUTPUT ~~~~~~~~~~~~"<<endl;
@@ -254,42 +246,5 @@ int main(int argc, char *argv[]) {
     // } else {
     //     cout<<"No solution exists"<<endl;
     // }
-    delete puzzle;
     return 0;
 }
-
-// Example of how to return a pointer to two dimensional array
-//
-// Cell **CreateGrid(int grid[N][N], Cell **puzzle) {
-//     Cell **puzzle = new Cell*[N];
-//     for (size_t row = 0; row < N; row++) {
-//         puzzle[row] = new Cell[N];
-//         for (size_t col = 0; col < N; col++) {
-//             puzzle[row][col].value = grid[row][col];
-//         }
-//     }
-//     return puzzle;
-// }
-
-    // int grid[N][N] = {
-    //     {3, 0, 6,   5, 0, 8,   4, 0, 0},
-    //     {5, 2, 0,   0, 0, 0,   0, 0, 0},
-    //     {0, 8, 7,   0, 0, 0,   0, 3, 1},
-
-    //     {0, 0, 3,   0, 1, 0,   0, 8, 0},
-    //     {9, 0, 0,   8, 6, 3,   0, 0, 5},
-    //     {0, 5, 0,   0, 9, 0,   6, 0, 0},
-
-    //     {1, 3, 0,   0, 0, 0,   2, 5, 0},
-    //     {0, 0, 0,   0, 0, 0,   0, 7, 4},
-    //     {0, 0, 5,   2, 0, 6,   3, 0, 0}
-    // };
-
-    // void CreatePuzzle(int grid[N][N], Cell **puzzle) {
-//     for (size_t row = 0; row < N; row++) {
-//         puzzle[row] = new Cell[N];
-//         for (size_t col = 0; col < N; col++) {
-//             puzzle[row][col].value = grid[row][col];
-//         }
-//     }
-// }
