@@ -68,7 +68,6 @@ void setValue(Cell **puzzle, const int &row, const int &col) {
 
 void FindPossible(Cell **puzzle) {
     int row, col;
-
     for (row = 0; row < N; row++) {
         for (col = 0; col < N; col++) {
             if (puzzle[row][col].value == UNASSIGNED) {
@@ -78,13 +77,6 @@ void FindPossible(Cell **puzzle) {
                     if (!isSafe(puzzle, row, col, num)) {
                         DeleteValueInVector(puzzle, row, col, num);
                     }
-                }
-                if (puzzle[row][col].possibilites.size() == 1) {
-                    cout << "New VALUE set: " << endl;
-                    printCell(puzzle, row, col);
-                    setValue(puzzle, row, col);
-                    // printCell(puzzle, row, col);
-
                 }
             } else {
                 cout << "Visiting defined cell " << row << ":" << col << endl;
