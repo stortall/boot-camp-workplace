@@ -14,7 +14,7 @@ typedef struct struct_cell {
 
 bool FindUnassignedLocation(Cell (&puzzle)[N][N], int &row, int &col);
 bool isSafe(Cell (&puzzle)[N][N], int row, int col, int num);
-void FindPossible(Cell (&puzzle)[N][N]);
+void ConstraintPropagation(Cell (&puzzle)[N][N]);
 void RemovePeerInRow(Cell (&puzzle)[N][N], int row, int num);
 void RemovePeerInCol(Cell (&puzzle)[N][N], int col, int num);
 void RemovePeerInBox(Cell (&puzzle)[N][N], int boxStartRow, int boxStartCol, int num);
@@ -63,7 +63,7 @@ void setValue(Cell (&puzzle)[N][N], const int &row, const int &col) {
     removeFromPeers(puzzle, row, col, num);
 }
 
-void FindPossible(Cell (&puzzle)[N][N]) {
+void ConstraintPropagation(Cell (&puzzle)[N][N]) {
     int row, col;
     for (row = 0; row < N; row++) {
         for (col = 0; col < N; col++) {
@@ -183,7 +183,7 @@ bool isSafe(Cell (&puzzle)[N][N], int row, int col, int num) {
        !UsedInBox(puzzle, row - row % 3 , col - col % 3, num);
 }
 
-void printGrid(Cell (&puzzle)[N][N]) {
+void PrintGrid(Cell (&puzzle)[N][N]) {
     for (int row = 0; row < N; row++) {
         for (int col = 0; col < N; col++) {
             std::cout<<puzzle[row][col].value<<"  ";
@@ -200,9 +200,8 @@ void printGrid(Cell (&puzzle)[N][N]) {
     std::cout<<std::endl;
 }
 
-void parse_csv(std::string filename, Cell (&puzzle)[N][N]) {
-    std::string line, colname;
-    int val;
+void ParseFile(std::string filename, Cell (&puzzle)[N][N]) {
+    std::string line;
     std::ifstream myFile(filename);
     if (!myFile.is_open()) {
         throw std::runtime_error("Could not open file");
@@ -212,10 +211,18 @@ void parse_csv(std::string filename, Cell (&puzzle)[N][N]) {
         while(getline(myFile, line)) {
             std::stringstream ss(line);
             int col = 0;
-            while(ss >> val){
-                puzzle[row][col].value = val;
+            for (size_t i = 0; i < line.length(); i++) {
+                if (col >= 9) {
+                    col = 0;
+                    row++;
+                } 
+                char character = line[i];
+                if (character > '0' and character <= '9') {
+                    puzzle[row][col].value = line[i] -'0';
+                } else {
+                    puzzle[row][col].value = 0;
+                }
                 puzzle[row][col].possibilites = {1,2,3,4,5,6,7,8,9};
-                if(ss.peek() == ',') ss.ignore();
                 col++;
             }
             row++;
@@ -226,23 +233,21 @@ void parse_csv(std::string filename, Cell (&puzzle)[N][N]) {
 
 int main(int argc, char *argv[]) {
     if (!argv[1]) {
-        std::cout << "CSV file needed. Aborting..." << std::endl;
+        std::cout << "Input file needed. Aborting..." << std::endl;
         return 1;
     } 
     Cell puzzle[N][N];
-    parse_csv(argv[1], puzzle);
+    ParseFile(argv[1], puzzle);
     std::cout<<"~~~~~~~~~~~~ INPUT ~~~~~~~~~~~~"<<std::endl;
-    printGrid(puzzle);
-    FindPossible(puzzle);
-    // std::cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<std::endl;
-    // printCells(puzzle);
+    PrintGrid(puzzle);
+    ConstraintPropagation(puzzle);
     std::cout<<"~ After constraint propagation~"<<std::endl;
-    printGrid(puzzle);
-    // if (SolveSudoku(puzzle) == true) {
-    //     std::cout<<"~~~~~~~~~~~ OUTPUT ~~~~~~~~~~~~"<<std::endl;
-    //     printGrid(puzzle);
-    // } else {
-    //     std::cout<<"No solution exists"<<std::endl;
-    // }
+    PrintGrid(puzzle);
+    if (SolveSudoku(puzzle) == true) {
+        std::cout<<"~~~~~~ After Brute Force ~~~~~~"<<std::endl;
+        PrintGrid(puzzle);
+    } else {
+        std::cout<<"No solution exists"<<std::endl;
+    }
     return 0;
 }
