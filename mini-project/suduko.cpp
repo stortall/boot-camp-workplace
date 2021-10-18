@@ -114,7 +114,7 @@ bool SolveSudoku(Cell (&puzzle)[N][N]) {
         return true;
     }
     // "num" is the guess to put in a cell
-    for (int num = 1; num <= 9; num++) {
+    for (int& num: puzzle[row][col].possibilites) {
         if (isSafe(puzzle, row, col, num)) {
             puzzle[row][col].value = num;
             if (SolveSudoku(puzzle)) {
