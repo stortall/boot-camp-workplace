@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream> 
 #include <vector> 
+#include <algorithm>
 #define N 9
 
 typedef struct struct_cell {
@@ -19,7 +20,7 @@ void RemovePeerInRow(Cell (&puzzle)[N][N], int row, int num);
 void RemovePeerInCol(Cell (&puzzle)[N][N], int col, int num);
 void RemovePeerInBox(Cell (&puzzle)[N][N], int boxStartRow, int boxStartCol, int num);
 void printCell(Cell (&puzzle)[N][N], const int &row, const int &col);
-void setValue(Cell (&puzzle)[N][N], const int &row, const int &col);
+void setValue(Cell (&puzzle)[N][N], const int &row, const int &col, const int &_num=0);
 
 void DeleteValueInVector(Cell (&puzzle)[N][N], const int &row, const int &col, const int &num) {
     for (unsigned i=0; i<puzzle[row][col].possibilites.size(); i++) {
@@ -56,11 +57,61 @@ void removeFromPeers(Cell (&puzzle)[N][N], const int &row, const int &col, int &
     RemovePeerInBox(puzzle, row - row % 3 , col - col % 3, num);
 }
 
-void setValue(Cell (&puzzle)[N][N], const int &row, const int &col) {
-    int num = puzzle[row][col].possibilites[0];
+void setValue(Cell (&puzzle)[N][N], const int &row, const int &col, const int &_num) {
+    int num;
+    if (_num == 0) {
+        num = puzzle[row][col].possibilites[0];
+    } else {
+        num = _num;
+    }
     puzzle[row][col].value = num;
     puzzle[row][col].possibilites.clear();
     removeFromPeers(puzzle, row, col, num);
+}
+
+bool IsPossibilityInRowPeers(Cell (&puzzle)[N][N], const int &_row, const int &_col, int _num) {
+    for (int col = 0; col < N; col++) {
+        if (col != _col) {
+            if (std::count(puzzle[_row][col].possibilites.begin(), puzzle[_row][col].possibilites.end(), _num)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool IsPossibilityInColPeers(Cell (&puzzle)[N][N], const int &_row, const int &_col, int _num) {
+    for (int row = 0; row < N; row++) {
+        if (row != _row) {
+            if (std::count(puzzle[row][_col].possibilites.begin(), puzzle[row][_col].possibilites.end(), _num)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool IsPossibilityInBoxPeers(Cell (&puzzle)[N][N], const int &_row, const int &_col, int _num) {
+    int boxStartRow = _row - _row % 3;
+    int boxStartCol = _col - _col % 3;
+    for (int row = 0; row < 3; row++) {
+        for (int col = 0; col < 3; col++) {
+            if (row + boxStartRow != _row && col + boxStartCol != _col) {
+                if (std::count(puzzle[row + boxStartRow][col + boxStartCol].possibilites.begin(), puzzle[row + boxStartRow][col + boxStartCol].possibilites.end(), _num)) {
+                    return true;
+                } 
+            }
+        }
+    }
+    return false;
+}
+
+void CheckUnits(Cell (&puzzle)[N][N], const int &row, const int &col) {
+    for (int& num: puzzle[row][col].possibilites) {
+        if (!IsPossibilityInRowPeers(puzzle, row, col, num) || !IsPossibilityInColPeers(puzzle, row, col, num) || !IsPossibilityInBoxPeers(puzzle, row, col, num)) {
+            setValue(puzzle, row, col, num);
+        }
+    }        
 }
 
 void ConstraintPropagation(Cell (&puzzle)[N][N]) {
@@ -74,6 +125,7 @@ void ConstraintPropagation(Cell (&puzzle)[N][N]) {
                     if (!isSafe(puzzle, row, col, num)) {
                         DeleteValueInVector(puzzle, row, col, num);
                     }
+                    CheckUnits(puzzle, row, col);
                 }
             } else {
                 // std::cout << "Visiting defined cell " << row << ":" << col << std::endl;
@@ -200,6 +252,49 @@ void PrintGrid(Cell (&puzzle)[N][N]) {
     std::cout<<std::endl;
 }
 
+void PrintGridState(Cell (&puzzle)[N][N]) {
+    unsigned int max_size = 1; 
+    unsigned int possi_size;
+    for (int row = 0; row < N; row++) {
+        for (int col = 0; col < N; col++) {
+            possi_size = puzzle[row][col].possibilites.size();
+            if (possi_size > max_size) {
+                max_size = possi_size;
+            }
+        }
+    }
+    for (int row = 0; row < N; row++) {
+        for (int col = 0; col < N; col++) {
+            if (puzzle[row][col].value == 0) {
+                for (size_t i = 0; i < max_size; i++) {
+                    if (i < puzzle[row][col].possibilites.size()) {
+                        std::cout<<puzzle[row][col].possibilites[i];
+                    } else {
+                        std::cout<< " ";
+                    }
+                }
+                std::cout<<"  ";
+            } else {
+                std::cout<<puzzle[row][col].value;
+                for (size_t i = 0; i < max_size-1; i++){
+                    std::cout<< " ";
+                }
+                std::cout<<"  ";
+            }
+            if (col == 2 || col == 5) {
+                std::cout << "|  ";
+            }
+        }
+        std::cout << "\n";
+        std::string dashes;
+        dashes.insert(0, (max_size-1)*3, '-');
+        if (row == 2 || row == 5) {
+            std::cout << "---------" << dashes << "+-----------" << dashes << "+---------" << dashes << "\n";
+        }
+    }
+    std::cout<<std::endl;
+}
+
 void ParseFile(std::string filename, Cell (&puzzle)[N][N]) {
     std::string line;
     std::ifstream myFile(filename);
@@ -242,12 +337,12 @@ int main(int argc, char *argv[]) {
     PrintGrid(puzzle);
     ConstraintPropagation(puzzle);
     std::cout<<"~ After constraint propagation~"<<std::endl;
-    PrintGrid(puzzle);
-    if (SolveSudoku(puzzle) == true) {
-        std::cout<<"~~~~~~ After Brute Force ~~~~~~"<<std::endl;
-        PrintGrid(puzzle);
-    } else {
-        std::cout<<"No solution exists"<<std::endl;
-    }
+    PrintGridState(puzzle);
+    // if (SolveSudoku(puzzle) == true) {
+    //     std::cout<<"~~~~~~ After Brute Force ~~~~~~"<<std::endl;
+    //     PrintGrid(puzzle);
+    // } else {
+    //     std::cout<<"No solution exists"<<std::endl;
+    // }
     return 0;
 }
