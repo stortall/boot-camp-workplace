@@ -13,9 +13,6 @@ int main(int argc, char *argv[]) {
     ConstraintPropagation(puzzle);
     std::cout<<"~ After constraint propagation~"<<std::endl;
     PrintGridState(puzzle);
-    // ConstraintPropagation(puzzle);
-    // std::cout<<"~ After constraint propagation~"<<std::endl;
-    // PrintGridState(puzzle);
     if (SolveSudoku(puzzle) == true) {
         std::cout<<"~~~~~~ After Brute Force ~~~~~~"<<std::endl;
         PrintGrid(puzzle);

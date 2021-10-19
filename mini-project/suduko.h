@@ -48,7 +48,7 @@ bool IsPossibilityInBoxPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num)
 void CheckUnits(Cell (&puzzle)[N][N], int row, int col);
 
 // For Brute Force
-bool FindUnassignedLocation(Cell (&puzzle)[N][N], int row, int col);
+bool FindUnassignedLocation(Cell (&puzzle)[N][N], int &row, int &col);
 bool SolveSudoku(Cell (&puzzle)[N][N]);
 bool UsedInRow(Cell (&puzzle)[N][N], int row, int num);
 bool UsedInCol(Cell (&puzzle)[N][N], int col, int num);

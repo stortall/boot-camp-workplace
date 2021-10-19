@@ -252,7 +252,7 @@ bool SolveSudoku(Cell (&puzzle)[N][N]) {
 }
 
 /* Searches the grid to find an entry that is still unassigned. */
-bool FindUnassignedLocation(Cell (&puzzle)[N][N], int row, int col) {
+bool FindUnassignedLocation(Cell (&puzzle)[N][N], int &row, int &col) {
     // row and col are passed by reference and are therefore assigned 
     // "in place" in stack memory. This is where the current worlking
     // cell is set.
