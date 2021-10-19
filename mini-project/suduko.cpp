@@ -1,29 +1,4 @@
-#include <iostream>
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <fstream>
-#include <sstream> 
-#include <vector> 
-#include <algorithm>
-#include <chrono>
-#define N 9
-
-typedef struct struct_cell {
-    unsigned int value;
-    std::vector<int> possibilites;
-}Cell;
-
-bool FindUnassignedLocation(Cell (&puzzle)[N][N], int row, int col);
-bool isPossible(Cell (&puzzle)[N][N], int row, int col, int num);
-void ConstraintPropagation(Cell (&puzzle)[N][N]);
-void RemovePeerInRow(Cell (&puzzle)[N][N], int row, int num);
-void RemovePeerInCol(Cell (&puzzle)[N][N], int col, int num);
-void RemovePeerInBox(Cell (&puzzle)[N][N], int boxStartRow, int boxStartCol, int num);
-void printCell(Cell (&puzzle)[N][N], int row, int col);
-void setValue(Cell (&puzzle)[N][N], int row, int col, int _num=0);
-void PrintGridState(Cell (&puzzle)[N][N]);
-void CheckUnits(Cell (&puzzle)[N][N], int row, int col);
+#include "suduko.h"
 
 bool IsValueInPossibilities(std::vector<int> &possibilities, int num) {
     for (size_t i=0; i<possibilities.size(); i++) {
@@ -43,6 +18,7 @@ void RunCheckUnitsForAllRowPeers(Cell (&puzzle)[N][N], int _row, int _col, int _
         }
     }
 }
+
 void RunCheckUnitsForAllColPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
     for (int row = 0; row < N; row++) {
         if (row != _row) {
@@ -52,6 +28,7 @@ void RunCheckUnitsForAllColPeers(Cell (&puzzle)[N][N], int _row, int _col, int _
         }
     }
 }
+
 void RunCheckUnitsForAllBoxPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
     int boxStartRow = _row - _row % 3;
     int boxStartCol = _col - _col % 3;
@@ -420,33 +397,4 @@ void ParseFile(std::string filename, Cell (&puzzle)[N][N]) {
         }
     }
     myFile.close();
-}
-
-int main(int argc, char *argv[]) {
-    auto start_program = std::chrono::high_resolution_clock::now();
-    if (!argv[1]) {
-        std::cout << "Input file needed. Aborting..." << std::endl;
-        return 1;
-    } 
-    Cell puzzle[N][N];
-    ParseFile(argv[1], puzzle);
-    std::cout<<"~~~~~~~~~~~~ INPUT ~~~~~~~~~~~~"<<std::endl;
-    PrintGrid(puzzle);
-    ConstraintPropagation(puzzle);
-    std::cout<<"~ After constraint propagation~"<<std::endl;
-    PrintGridState(puzzle);
-    // ConstraintPropagation(puzzle);
-    // std::cout<<"~ After constraint propagation~"<<std::endl;
-    // PrintGridState(puzzle);
-    if (SolveSudoku(puzzle) == true) {
-        std::cout<<"~~~~~~ After Brute Force ~~~~~~"<<std::endl;
-        PrintGrid(puzzle);
-    } else {
-        std::cout<<"No solution exists"<<std::endl;
-    }
-    
-    auto end_program = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_program - start_program);
-    std::cout << "Total execution time (ms): " << duration.count() << std::endl;
-    return 0;
 }
