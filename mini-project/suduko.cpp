@@ -422,15 +422,8 @@ void ParseFile(std::string filename, Cell (&puzzle)[N][N]) {
     myFile.close();
 }
 
-// void long_operation()
-// {
-//     /* Simulating a long, heavy operation. */
-
-//     using namespace std::chrono_literals;
-//     std::this_thread::sleep_for(150ms);
-// }
-
 int main(int argc, char *argv[]) {
+    auto start_program = std::chrono::high_resolution_clock::now();
     if (!argv[1]) {
         std::cout << "Input file needed. Aborting..." << std::endl;
         return 1;
@@ -451,5 +444,9 @@ int main(int argc, char *argv[]) {
     } else {
         std::cout<<"No solution exists"<<std::endl;
     }
+    
+    auto end_program = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_program - start_program);
+    std::cout << "Total execution time (ms): " << duration.count() << std::endl;
     return 0;
 }
