@@ -21,6 +21,7 @@ void RemovePeerInCol(Cell (&puzzle)[N][N], int col, int num);
 void RemovePeerInBox(Cell (&puzzle)[N][N], int boxStartRow, int boxStartCol, int num);
 void printCell(Cell (&puzzle)[N][N], const int &row, const int &col);
 void setValue(Cell (&puzzle)[N][N], const int &row, const int &col, const int &_num=0);
+void PrintGridState(Cell (&puzzle)[N][N]);
 
 void DeleteValueInVector(Cell (&puzzle)[N][N], const int &row, const int &col, const int &num) {
     for (unsigned i=0; i<puzzle[row][col].possibilites.size(); i++) {
@@ -77,6 +78,7 @@ bool IsPossibilityInRowPeers(Cell (&puzzle)[N][N], const int &_row, const int &_
             }
         }
     }
+    std::cout << "NOT Found possible number in row: " << _num << std::endl;
     return false;
 }
 
@@ -88,6 +90,7 @@ bool IsPossibilityInColPeers(Cell (&puzzle)[N][N], const int &_row, const int &_
             }
         }
     }
+    std::cout << "NOT Found possible number col: " << _num << std::endl;
     return false;
 }
 
@@ -96,25 +99,44 @@ bool IsPossibilityInBoxPeers(Cell (&puzzle)[N][N], const int &_row, const int &_
     int boxStartCol = _col - _col % 3;
     for (int row = 0; row < 3; row++) {
         for (int col = 0; col < 3; col++) {
-            if (row + boxStartRow != _row && col + boxStartCol != _col) {
+            
+            if (!(row + boxStartRow == _row && col + boxStartCol == _col)) {
+                // std::cout << "Visiting box peer: " << row + boxStartRow << ":" << col + boxStartCol << std::endl;
                 if (std::count(puzzle[row + boxStartRow][col + boxStartCol].possibilites.begin(), puzzle[row + boxStartRow][col + boxStartCol].possibilites.end(), _num)) {
+                    printCell(puzzle, row + boxStartRow, col + boxStartCol);
+                    // std::cout << "Found possible number: " << _num << std::endl;
                     return true;
                 } 
             }
         }
     }
+    // std::cout << "NOT Found possible number in box: " << _num << std::endl;
     return false;
 }
 
 void CheckUnits(Cell (&puzzle)[N][N], const int &row, const int &col) {
     for (int& num: puzzle[row][col].possibilites) {
+        std::cout << "checking " << row << ":" << col << " Possible number: " << num << std::endl;
         if (!IsPossibilityInRowPeers(puzzle, row, col, num) || !IsPossibilityInColPeers(puzzle, row, col, num) || !IsPossibilityInBoxPeers(puzzle, row, col, num)) {
+            std::cout << "Setting value: " << row << ":" << col << " value: " << num << std::endl;
             setValue(puzzle, row, col, num);
         }
     }        
 }
 
+void CleanPossibleValues(Cell (&puzzle)[N][N]) {
+    int row, col;
+    for (row = 0; row < N; row++) {
+        for (col = 0; col < N; col++) {
+            if (puzzle[row][col].value != 0) {
+                puzzle[row][col].possibilites.clear();
+            }
+        }
+    }
+}
+
 void ConstraintPropagation(Cell (&puzzle)[N][N]) {
+    CleanPossibleValues(puzzle);
     int row, col;
     for (row = 0; row < N; row++) {
         for (col = 0; col < N; col++) {
@@ -125,8 +147,9 @@ void ConstraintPropagation(Cell (&puzzle)[N][N]) {
                     if (!isSafe(puzzle, row, col, num)) {
                         DeleteValueInVector(puzzle, row, col, num);
                     }
-                    CheckUnits(puzzle, row, col);
                 }
+                PrintGridState(puzzle);
+                CheckUnits(puzzle, row, col);
             } else {
                 // std::cout << "Visiting defined cell " << row << ":" << col << std::endl;
                 int num = puzzle[row][col].value;
@@ -335,6 +358,9 @@ int main(int argc, char *argv[]) {
     ParseFile(argv[1], puzzle);
     std::cout<<"~~~~~~~~~~~~ INPUT ~~~~~~~~~~~~"<<std::endl;
     PrintGrid(puzzle);
+    ConstraintPropagation(puzzle);
+    std::cout<<"~ After constraint propagation~"<<std::endl;
+    PrintGridState(puzzle);
     ConstraintPropagation(puzzle);
     std::cout<<"~ After constraint propagation~"<<std::endl;
     PrintGridState(puzzle);
