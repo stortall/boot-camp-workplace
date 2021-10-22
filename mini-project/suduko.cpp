@@ -1,41 +1,41 @@
 #include "suduko.h"
 
-bool IsValueInPossibilities(std::vector<int> &possibilities, int num) {
-    for (size_t i=0; i<possibilities.size(); i++) {
-        if (possibilities[i] == num) {
+bool IsValueInHypos(std::vector<int> &hypos, int num) {
+    for (int& hypo: hypos) {
+        if (hypo == num) {
             return true;
         }
     }
     return false;
 }
 
-void RunCheckUnitsForAllRowPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
+void VisitRowPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
     for (int col = 0; col < N; col++) {
         if (col != _col) {
-            if (IsValueInPossibilities(puzzle[_row][col].possibilites, _num)) {
+            if (IsValueInHypos(puzzle[_row][col].hypos, _num)) {
                 CheckUnits(puzzle, _row, col);
             }
         }
     }
 }
 
-void RunCheckUnitsForAllColPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
+void VisitColPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
     for (int row = 0; row < N; row++) {
         if (row != _row) {
-            if (IsValueInPossibilities(puzzle[row][_col].possibilites, _num)) {
+            if (IsValueInHypos(puzzle[row][_col].hypos, _num)) {
                 CheckUnits(puzzle, row, _col);
             }
         }
     }
 }
 
-void RunCheckUnitsForAllBoxPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
+void VisitBoxPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
     int boxStartRow = _row - _row % 3;
     int boxStartCol = _col - _col % 3;
     for (int row = 0; row < 3; row++) {
         for (int col = 0; col < 3; col++) {
             if (!(row + boxStartRow == _row && col + boxStartCol == _col)) {
-                if (IsValueInPossibilities(puzzle[row + boxStartRow][col + boxStartCol].possibilites, _num)) {
+                if (IsValueInHypos(puzzle[row + boxStartRow][col + boxStartCol].hypos, _num)) {
                     CheckUnits(puzzle, row + boxStartRow, col + boxStartCol);
                 } 
             }
@@ -43,25 +43,20 @@ void RunCheckUnitsForAllBoxPeers(Cell (&puzzle)[N][N], int _row, int _col, int _
     }
 }
 
+void VisitPeers(Cell (&puzzle)[N][N], int row, int col, int num) {
+    VisitRowPeers(puzzle, row, col, num);
+    VisitColPeers(puzzle, row, col, num);
+    VisitBoxPeers(puzzle, row, col, num);
+}
+
 void DeleteValueInVector(Cell (&puzzle)[N][N], int row, int col, int num) {
-    // bool somethingDeleted = false;
-    for (unsigned i=0; i<puzzle[row][col].possibilites.size(); i++) {
-        if (puzzle[row][col].possibilites[i] == num) {
-            puzzle[row][col].possibilites.erase(puzzle[row][col].possibilites.begin() + i);
-            // somethingDeleted = true;
-            // std::cout << "Value " << num << " deleted from possibilities in " << row << ":" << col << ". Calling all peers" << std::endl;
-            // CheckUnits(puzzle, row, col);
-            // Call a function that check each Unit if the deleted value is unique in that unit. Try to set value.
-            RunCheckUnitsForAllRowPeers(puzzle, row, col, num);
-            RunCheckUnitsForAllColPeers(puzzle, row, col, num);
-            RunCheckUnitsForAllBoxPeers(puzzle, row, col, num);
+    for (unsigned i = 0; i < puzzle[row][col].hypos.size(); i++) {
+        if (puzzle[row][col].hypos[i] == num) {
+            puzzle[row][col].hypos.erase(puzzle[row][col].hypos.begin() + i);
+            VisitPeers(puzzle, row, col, num);
         }
     }
-    // if (somethingDeleted) {
-    //     CheckUnits(puzzle, row, col);
-    // }
-    if (puzzle[row][col].possibilites.size() == 1) {
-        // std::cout << "Only one value left in possible values (" << num << ") for cell " << row << ":" << col << ". Setting value." << std::endl;
+    if (puzzle[row][col].hypos.size() == 1) {
         setValue(puzzle, row, col);
     }
 }
@@ -84,7 +79,7 @@ void RemovePeerInBox(Cell (&puzzle)[N][N], int boxStartRow, int boxStartCol, int
     }
 }
 
-void removeFromPeers(Cell (&puzzle)[N][N], int row, int col, int num) {
+void RemoveFromPeers(Cell (&puzzle)[N][N], int row, int col, int num) {
     RemovePeerInRow(puzzle, row, num);
     RemovePeerInCol(puzzle, col, num);
     RemovePeerInBox(puzzle, row - row % 3 , col - col % 3, num);
@@ -93,65 +88,54 @@ void removeFromPeers(Cell (&puzzle)[N][N], int row, int col, int num) {
 void setValue(Cell (&puzzle)[N][N], int row, int col, int _num) {
     int num;
     if (_num == 0) {
-        num = puzzle[row][col].possibilites[0];
+        num = puzzle[row][col].hypos[0];
     } else {
         num = _num;
     }
     if (isPossible(puzzle, row, col, num)) {
-        // std::cout << "Setting value: " << row << ":" << col << " value: " << num << std::endl;
         puzzle[row][col].value = num;
-        puzzle[row][col].possibilites.clear();    
-        // PrintGridState(puzzle);
-        removeFromPeers(puzzle, row, col, num);
-    } else {
-        // std::cout << "Setting failed after <isPossible()> check" << std::endl;
+        puzzle[row][col].hypos.clear();    
+        RemoveFromPeers(puzzle, row, col, num);
     }
 }
 
 /* For a given Cell defined by (_row, _col), returns true if Value (_num) is in 
- any of the peers vector Possibilities.
+ any of the peers vector Hypos.
  */
-bool IsPossibilityInRowPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
+bool IsHypoInRowPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
     for (int col = 0; col < N; col++) {
         if (col != _col) {
-            if (std::count(puzzle[_row][col].possibilites.begin(), puzzle[_row][col].possibilites.end(), _num)) {
+            if (std::count(puzzle[_row][col].hypos.begin(), puzzle[_row][col].hypos.end(), _num)) {
                 return true;
             }
         }
     }
-    // std::cout << "NOT Found possible number in row: " << _num << std::endl;
     return false;
 }
 
-bool IsPossibilityInColPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
+bool IsHypoInColPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
     for (int row = 0; row < N; row++) {
         if (row != _row) {
-            if (std::count(puzzle[row][_col].possibilites.begin(), puzzle[row][_col].possibilites.end(), _num)) {
+            if (std::count(puzzle[row][_col].hypos.begin(), puzzle[row][_col].hypos.end(), _num)) {
                 return true;
             }
         }
     }
-    // std::cout << "NOT Found possible number col: " << _num << std::endl;
     return false;
 }
 
-bool IsPossibilityInBoxPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
+bool IsHypoInBoxPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
     int boxStartRow = _row - _row % 3;
     int boxStartCol = _col - _col % 3;
     for (int row = 0; row < 3; row++) {
         for (int col = 0; col < 3; col++) {
-            
             if (!(row + boxStartRow == _row && col + boxStartCol == _col)) {
-                // std::cout << "Visiting box peer: " << row + boxStartRow << ":" << col + boxStartCol << std::endl;
-                if (std::count(puzzle[row + boxStartRow][col + boxStartCol].possibilites.begin(), puzzle[row + boxStartRow][col + boxStartCol].possibilites.end(), _num)) {
-                    // printCell(puzzle, row + boxStartRow, col + boxStartCol);
-                    // std::cout << "Found possible number: " << _num << std::endl;
+                if (std::count(puzzle[row + boxStartRow][col + boxStartCol].hypos.begin(), puzzle[row + boxStartRow][col + boxStartCol].hypos.end(), _num)) {
                     return true;
                 } 
             }
         }
     }
-    // std::cout << "NOT Found possible number in box: " << _num << std::endl;
     return false;
 }
 
@@ -160,51 +144,46 @@ any of the three Units.
  */
 void CheckUnits(Cell (&puzzle)[N][N], int row, int col) {
     int num;
-    // for (int& num: puzzle[row][col].possibilites) {
-    for (size_t i = 0; i < puzzle[row][col].possibilites.size(); i++) {
-        num = puzzle[row][col].possibilites[i];
-        // std::cout << "Checking " << row << ":" << col << " Possible number: " << num << std::endl;
-        // printCell(puzzle, row, col);
-        if (!IsPossibilityInRowPeers(puzzle, row, col, num) || !IsPossibilityInColPeers(puzzle, row, col, num) || !IsPossibilityInBoxPeers(puzzle, row, col, num)) {
-            // std::cout << "Trying to set value: " << row << ":" << col << " value: " << num << std::endl;
+    for (size_t i = 0; i < puzzle[row][col].hypos.size(); i++) {
+        num = puzzle[row][col].hypos[i];
+        if (!IsHypoInRowPeers(puzzle, row, col, num) || 
+            !IsHypoInColPeers(puzzle, row, col, num) || 
+            !IsHypoInBoxPeers(puzzle, row, col, num)) {
             setValue(puzzle, row, col, num);
         }
     }        
 }
 
-void CleanPossibleValues(Cell (&puzzle)[N][N]) {
+void CleanHypoValues(Cell (&puzzle)[N][N]) {
     int row, col;
     for (row = 0; row < N; row++) {
         for (col = 0; col < N; col++) {
             if (puzzle[row][col].value != 0) {
-                puzzle[row][col].possibilites.clear();
+                puzzle[row][col].hypos.clear();
             }
         }
     }
 }
 
 void ConstraintPropagation(Cell (&puzzle)[N][N]) {
-    CleanPossibleValues(puzzle);
+    CleanHypoValues(puzzle);
     int row, col;
     for (row = 0; row < N; row++) {
         for (col = 0; col < N; col++) {
             if (puzzle[row][col].value == 0) {
-                // std::cout << "Visiting empty cell: ";
-                // printCell(puzzle, row, col);
+                // Visiting empty cell
                 for (int num = 1; num <= 9; num++) {
                     // Eliminate possible value if value NOT possible in cell
                     if (!isPossible(puzzle, row, col, num)) {
                         DeleteValueInVector(puzzle, row, col, num);
                     }
                 }
-                // PrintGridState(puzzle);
                 CheckUnits(puzzle, row, col);
             } else {
-                // std::cout << "Visiting defined cell ";
-                // printCell(puzzle, row, col);
+                // Visiting defined cell
                 int num = puzzle[row][col].value;
-                puzzle[row][col].possibilites.clear();
-                removeFromPeers(puzzle, row, col, num);
+                puzzle[row][col].hypos.clear();
+                RemoveFromPeers(puzzle, row, col, num);
             }
         }
     }
@@ -214,9 +193,9 @@ void ConstraintPropagation(Cell (&puzzle)[N][N]) {
 void printCell(Cell (&puzzle)[N][N], int row, int col) {
     std::cout << row << ":" << col << ", ";
     std::cout << "Value: " << puzzle[row][col].value << ", ";
-    std::cout << "possibilities: ";
-    for (unsigned i=0; i<puzzle[row][col].possibilites.size(); i++) {
-        std::cout << ' ' << puzzle[row][col].possibilites.at(i);
+    std::cout << "hypos: ";
+    for (unsigned i=0; i<puzzle[row][col].hypos.size(); i++) {
+        std::cout << ' ' << puzzle[row][col].hypos.at(i);
     }
     std::cout << std::endl;
 }
@@ -239,7 +218,7 @@ bool SolveSudoku(Cell (&puzzle)[N][N]) {
         return true;
     }
     // "num" is the guess to put in a cell
-    for (int& num: puzzle[row][col].possibilites) {
+    for (int& num: puzzle[row][col].hypos) {
         if (isPossible(puzzle, row, col, num)) {
             puzzle[row][col].value = num;
             if (SolveSudoku(puzzle)) {
@@ -327,12 +306,12 @@ void PrintGrid(Cell (&puzzle)[N][N]) {
 
 void PrintGridState(Cell (&puzzle)[N][N]) {
     unsigned int max_size = 1; 
-    unsigned int possi_size;
+    unsigned int hypo_size;
     for (int row = 0; row < N; row++) {
         for (int col = 0; col < N; col++) {
-            possi_size = puzzle[row][col].possibilites.size();
-            if (possi_size > max_size) {
-                max_size = possi_size;
+            hypo_size = puzzle[row][col].hypos.size();
+            if (hypo_size > max_size) {
+                max_size = hypo_size;
             }
         }
     }
@@ -340,8 +319,8 @@ void PrintGridState(Cell (&puzzle)[N][N]) {
         for (int col = 0; col < N; col++) {
             if (puzzle[row][col].value == 0) {
                 for (size_t i = 0; i < max_size; i++) {
-                    if (i < puzzle[row][col].possibilites.size()) {
-                        std::cout<<puzzle[row][col].possibilites[i];
+                    if (i < puzzle[row][col].hypos.size()) {
+                        std::cout<<puzzle[row][col].hypos[i];
                     } else {
                         std::cout<< " ";
                     }
@@ -390,7 +369,7 @@ void ParseFile(std::string filename, Cell (&puzzle)[N][N]) {
                 } else {
                     puzzle[row][col].value = 0;
                 }
-                puzzle[row][col].possibilites = {1,2,3,4,5,6,7,8,9};
+                puzzle[row][col].hypos = {1,2,3,4,5,6,7,8,9};
                 col++;
             }
             row++;

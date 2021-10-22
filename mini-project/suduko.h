@@ -11,7 +11,7 @@
 
 typedef struct struct_cell {
     unsigned int value;
-    std::vector<int> possibilites;
+    std::vector<int> hypos;
 }Cell;
 
 // General
@@ -33,18 +33,18 @@ void DeleteValueInVector(Cell (&puzzle)[N][N], int row, int col, int num);
 void RemovePeerInRow(Cell (&puzzle)[N][N], int row, int num);
 void RemovePeerInCol(Cell (&puzzle)[N][N], int col, int num);
 void RemovePeerInBox(Cell (&puzzle)[N][N], int boxStartRow, int boxStartCol, int num);
-void removeFromPeers(Cell (&puzzle)[N][N], int row, int col, int num);
+void RemoveFromPeers(Cell (&puzzle)[N][N], int row, int col, int num);
 void setValue(Cell (&puzzle)[N][N], int row, int col, int _num);
-void CleanPossibleValues(Cell (&puzzle)[N][N]);
+void CleanHypoValues(Cell (&puzzle)[N][N]);
 
 // For Constraint Propagation, Rule 2
-bool IsValueInPossibilities(std::vector<int> &possibilities, int num);
-void RunCheckUnitsForAllRowPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num);
-void RunCheckUnitsForAllColPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num);
-void RunCheckUnitsForAllBoxPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num);
-bool IsPossibilityInRowPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num);
-bool IsPossibilityInColPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num);
-bool IsPossibilityInBoxPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num);
+bool IsValueInHypos(std::vector<int> &hypos, int num);
+void VisitRowPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num);
+void VisitColPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num);
+void VisitBoxPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num);
+bool IsHypoInRowPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num);
+bool IsHypoInColPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num);
+bool IsHypoInBoxPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num);
 void CheckUnits(Cell (&puzzle)[N][N], int row, int col);
 
 // For Brute Force
