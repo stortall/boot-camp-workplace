@@ -44,12 +44,18 @@ void VisitBoxPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
 }
 
 void VisitPeers(Cell (&puzzle)[N][N], int row, int col, int num) {
+    // unsigned int peer_row, peer_col;
+    // for (Coord_t peers : puzzle[row][col].Peers) {
+    //     if (IsValueInHypos(puzzle[peers.row][peers.col].hypos, num)) {
+    //         CheckUnits(puzzle, peers.row, peers.col);
+    //     }
+    // }
     VisitRowPeers(puzzle, row, col, num);
     VisitColPeers(puzzle, row, col, num);
     VisitBoxPeers(puzzle, row, col, num);
 }
 
-void DeleteValueInVector(Cell (&puzzle)[N][N], int row, int col, int num) {
+void DeleteHypo(Cell (&puzzle)[N][N], int row, int col, int num) {
     for (unsigned i = 0; i < puzzle[row][col].hypos.size(); i++) {
         if (puzzle[row][col].hypos[i] == num) {
             puzzle[row][col].hypos.erase(puzzle[row][col].hypos.begin() + i);
@@ -63,18 +69,18 @@ void DeleteValueInVector(Cell (&puzzle)[N][N], int row, int col, int num) {
 
 void RemovePeerInRow(Cell (&puzzle)[N][N], int row, int num) {
     for (int col = 0; col < N; col++) {
-        DeleteValueInVector(puzzle, row, col, num);
+        DeleteHypo(puzzle, row, col, num);
     }
 }
 void RemovePeerInCol(Cell (&puzzle)[N][N], int col, int num) {
     for (int row = 0; row < N; row++) {
-        DeleteValueInVector(puzzle, row, col, num);
+        DeleteHypo(puzzle, row, col, num);
     }
 }
 void RemovePeerInBox(Cell (&puzzle)[N][N], int boxStartRow, int boxStartCol, int num) {
     for (int row = 0; row < 3; row++) {
         for (int col = 0; col < 3; col++) {
-            DeleteValueInVector(puzzle, row+boxStartRow, col+boxStartCol, num);
+            DeleteHypo(puzzle, row+boxStartRow, col+boxStartCol, num);
         }
     }
 }
@@ -175,7 +181,7 @@ void ConstraintPropagation(Cell (&puzzle)[N][N]) {
                 for (int num = 1; num <= 9; num++) {
                     // Eliminate possible value if value NOT possible in cell
                     if (!isPossible(puzzle, row, col, num)) {
-                        DeleteValueInVector(puzzle, row, col, num);
+                        DeleteHypo(puzzle, row, col, num);
                     }
                 }
                 CheckUnits(puzzle, row, col);
@@ -190,27 +196,9 @@ void ConstraintPropagation(Cell (&puzzle)[N][N]) {
 
 }
 
-void printCell(Cell (&puzzle)[N][N], int row, int col) {
-    std::cout << row << ":" << col << ", ";
-    std::cout << "Value: " << puzzle[row][col].value << ", ";
-    std::cout << "hypos: ";
-    for (unsigned i=0; i<puzzle[row][col].hypos.size(); i++) {
-        std::cout << ' ' << puzzle[row][col].hypos.at(i);
-    }
-    std::cout << std::endl;
-}
-
-void printCells(Cell (&puzzle)[N][N]) {
-    for (int row = 0; row < N; row++) {
-        for (int col = 0; col < N; col++) {
-            printCell(puzzle, row, col);
-        }
-    }
-}
-
 /* assign values to all unassigned locations for Sudoku solution  
  */
-bool SolveSudoku(Cell (&puzzle)[N][N]) {
+bool SolveSudoku(Cell (&puzzle)[N][N], unsigned int &_guesses) {
     int row, col;
     // row and int are assigned by reference in function
     // FindUnassignedLocation() 
@@ -221,7 +209,8 @@ bool SolveSudoku(Cell (&puzzle)[N][N]) {
     for (int& num: puzzle[row][col].hypos) {
         if (isPossible(puzzle, row, col, num)) {
             puzzle[row][col].value = num;
-            if (SolveSudoku(puzzle)) {
+            _guesses++;
+            if (SolveSudoku(puzzle, _guesses)) {
                 return true;
             }
             puzzle[row][col].value = 0;
@@ -287,93 +276,6 @@ bool isPossible(Cell (&puzzle)[N][N], int row, int col, int num) {
        !UsedInBox(puzzle, row - row % 3 , col - col % 3, num);
 }
 
-void PrintGrid(Cell (&puzzle)[N][N]) {
-    for (int row = 0; row < N; row++) {
-        for (int col = 0; col < N; col++) {
-            std::cout<<puzzle[row][col].value<<"  ";
 
-            if (col == 2 || col == 5) {
-                std::cout << "|  ";
-            }
-        }
-        std::cout << "\n";
-        if (row == 2 || row == 5) {
-            std::cout << "---------+-----------+---------\n";
-        }
-    }
-    std::cout<<std::endl;
-}
 
-void PrintGridState(Cell (&puzzle)[N][N]) {
-    unsigned int max_size = 1; 
-    unsigned int hypo_size;
-    for (int row = 0; row < N; row++) {
-        for (int col = 0; col < N; col++) {
-            hypo_size = puzzle[row][col].hypos.size();
-            if (hypo_size > max_size) {
-                max_size = hypo_size;
-            }
-        }
-    }
-    for (int row = 0; row < N; row++) {
-        for (int col = 0; col < N; col++) {
-            if (puzzle[row][col].value == 0) {
-                for (size_t i = 0; i < max_size; i++) {
-                    if (i < puzzle[row][col].hypos.size()) {
-                        std::cout<<puzzle[row][col].hypos[i];
-                    } else {
-                        std::cout<< " ";
-                    }
-                }
-                std::cout<<"  ";
-            } else {
-                std::cout<<puzzle[row][col].value;
-                for (size_t i = 0; i < max_size-1; i++){
-                    std::cout<< " ";
-                }
-                std::cout<<"  ";
-            }
-            if (col == 2 || col == 5) {
-                std::cout << "|  ";
-            }
-        }
-        std::cout << "\n";
-        std::string dashes;
-        dashes.insert(0, (max_size-1)*3, '-');
-        if (row == 2 || row == 5) {
-            std::cout << "---------" << dashes << "+-----------" << dashes << "+---------" << dashes << "\n";
-        }
-    }
-    std::cout<<std::endl;
-}
 
-void ParseFile(std::string filename, Cell (&puzzle)[N][N]) {
-    std::string line;
-    std::ifstream myFile(filename);
-    if (!myFile.is_open()) {
-        throw std::runtime_error("Could not open file");
-    } 
-    if (myFile.good()) {
-        int row = 0;
-        while(getline(myFile, line)) {
-            std::stringstream ss(line);
-            int col = 0;
-            for (size_t i = 0; i < line.length(); i++) {
-                if (col >= 9) {
-                    col = 0;
-                    row++;
-                } 
-                char character = line[i];
-                if (character > '0' and character <= '9') {
-                    puzzle[row][col].value = line[i] -'0';
-                } else {
-                    puzzle[row][col].value = 0;
-                }
-                puzzle[row][col].hypos = {1,2,3,4,5,6,7,8,9};
-                col++;
-            }
-            row++;
-        }
-    }
-    myFile.close();
-}
