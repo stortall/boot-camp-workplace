@@ -23,8 +23,16 @@ void BuildPuzzleGrid(std::string _puzzle, Cell (&puzzle)[N][N]) {
             puzzle[row][col].value = 0;
         }
         puzzle[row][col].hypos = {1,2,3,4,5,6,7,8,9};
-        // PopulateUnitsAndPeers(puzzle, row, col);
+        PopulateUnitsAndPeers(puzzle, row, col);
         col++;
+    }
+}
+
+void BuildUnitsAndPeers(Cell (&puzzle)[N][N]) {
+    for (unsigned int row = 0; row < N; row++) {
+        for (unsigned int col = 0; col < N; col++) {
+            PopulateUnitsAndPeers(puzzle, row, col);
+        }
     }
 }
 
@@ -85,13 +93,13 @@ void PrintGrid(Cell (&puzzle)[N][N]) {
     std::cout<<std::endl;
 }
 
-void PrintGridAsLine(Cell (&puzzle)[N][N], unsigned const int &_nr, unsigned const int _guesses) {
-    std::cout << "Puzzle " << _nr;
-    if(_guesses == 0) {
-        std::cout << " solved w/o search (only Const. Prop.): \t";
-    } else {
-        std::cout << " solved after " << _guesses << " guesses: \t\t\t";
-    }
+void PrintGridAsLine(Cell (&puzzle)[N][N]/* , unsigned const int &_nr, unsigned const int _guesses */) {
+    // std::cout << "Puzzle " << _nr;
+    // if(_guesses == 0) {
+    //     std::cout << " solved w/o search (only Const. Prop.): \t";
+    // } else {
+    //     std::cout << " solved after " << _guesses << " guesses: \t\t\t";
+    // }
     
     for (int row = 0; row < N; row++) {
         for (int col = 0; col < N; col++) {

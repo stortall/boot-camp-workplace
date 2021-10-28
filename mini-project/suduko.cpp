@@ -44,25 +44,33 @@ void VisitBoxPeers(Cell (&puzzle)[N][N], int _row, int _col, int _num) {
 }
 
 void VisitPeers(Cell (&puzzle)[N][N], int row, int col, int num) {
-    // unsigned int peer_row, peer_col;
-    // for (Coord_t peers : puzzle[row][col].Peers) {
-    //     if (IsValueInHypos(puzzle[peers.row][peers.col].hypos, num)) {
-    //         CheckUnits(puzzle, peers.row, peers.col);
-    //     }
-    // }
-    VisitRowPeers(puzzle, row, col, num);
-    VisitColPeers(puzzle, row, col, num);
-    VisitBoxPeers(puzzle, row, col, num);
+    unsigned int peer_row, peer_col;
+    for (Coord_t peers : puzzle[row][col].Peers) {
+        if (IsValueInHypos(puzzle[peers.row][peers.col].hypos, num)) {
+            CheckUnits(puzzle, peers.row, peers.col);
+        }
+    }
+    // VisitRowPeers(puzzle, row, col, num);
+    // VisitColPeers(puzzle, row, col, num);
+    // VisitBoxPeers(puzzle, row, col, num);
 }
 
 void DeleteHypo(Cell (&puzzle)[N][N], int row, int col, int num) {
     for (unsigned i = 0; i < puzzle[row][col].hypos.size(); i++) {
         if (puzzle[row][col].hypos[i] == num) {
+            // // Debugging
+            // std::string hypos_str;
+            // for (unsigned i = 0; i < puzzle[row][col].hypos.size(); i++) {
+            //     hypos_str = hypos_str + "," + std::to_string(puzzle[row][col].hypos[i]);
+            // }
+            // std::cout << "removing hypo " << num << " from peer (" << row << "," << col << ") hypo vector: " << hypos_str << std::endl;
+            // // Debugging end
             puzzle[row][col].hypos.erase(puzzle[row][col].hypos.begin() + i);
             VisitPeers(puzzle, row, col, num);
         }
     }
     if (puzzle[row][col].hypos.size() == 1) {
+        // std::cout << "Trying to set value in (" << row << "," << col << ")" << std::endl;
         setValue(puzzle, row, col);
     }
 }
@@ -86,6 +94,7 @@ void RemovePeerInBox(Cell (&puzzle)[N][N], int boxStartRow, int boxStartCol, int
 }
 
 void RemoveFromPeers(Cell (&puzzle)[N][N], int row, int col, int num) {
+    // std::cout << "removing " << num << " from peers to (" << row << "," << col << ")" << std::endl;
     RemovePeerInRow(puzzle, row, num);
     RemovePeerInCol(puzzle, col, num);
     RemovePeerInBox(puzzle, row - row % 3 , col - col % 3, num);
@@ -99,9 +108,12 @@ void setValue(Cell (&puzzle)[N][N], int row, int col, int _num) {
         num = _num;
     }
     if (isPossible(puzzle, row, col, num)) {
+        // std::cout << "setting " << num << " in (" << row << "," << col << ")" << std::endl;
         puzzle[row][col].value = num;
-        puzzle[row][col].hypos.clear();    
+        puzzle[row][col].hypos.clear();   
+        // PrintGridState(puzzle); 
         RemoveFromPeers(puzzle, row, col, num);
+        
     }
 }
 
@@ -155,6 +167,7 @@ void CheckUnits(Cell (&puzzle)[N][N], int row, int col) {
         if (!IsHypoInRowPeers(puzzle, row, col, num) || 
             !IsHypoInColPeers(puzzle, row, col, num) || 
             !IsHypoInBoxPeers(puzzle, row, col, num)) {
+            // std::cout << "Unique peer in unit found, setting " << num << " in (" << row << "," << col << ")" << std::endl;
             setValue(puzzle, row, col, num);
         }
     }        
@@ -172,7 +185,7 @@ void CleanHypoValues(Cell (&puzzle)[N][N]) {
 }
 
 void ConstraintPropagation(Cell (&puzzle)[N][N]) {
-    CleanHypoValues(puzzle);
+    
     int row, col;
     for (row = 0; row < N; row++) {
         for (col = 0; col < N; col++) {
@@ -202,21 +215,85 @@ bool SolveSudoku(Cell (&puzzle)[N][N], unsigned int &_guesses) {
     int row, col;
     // row and int are assigned by reference in function
     // FindUnassignedLocation() 
-    if (!FindUnassignedLocation(puzzle, row, col)) {
+    // if (!FindUnassignedLocation(puzzle, row, col)) {
+    if (!FindFewestHypoCell(puzzle, row, col)) {
         return true;
     }
+    // std::cout << row << ":" << col << std::endl;
     // "num" is the guess to put in a cell
+    // if (puzzle[row][col].hypos.empty()) {
+    //     std::cout << "EMPTY CELL WITH EMPTY HYPO (" << row << "," << col << ")" << std::endl;
+    //     for (int& num: puzzle[row][col].hypos) {
+    //         std::cout << "loop" << std::endl;
+    //     }
+    // }
+    // Copy puzzle
+    Cell puzzle_copy[N][N];
+    for(size_t i = 0; i < N; i++){
+        for(size_t j = 0; j < N; j++){
+            puzzle_copy[i][j] = puzzle[i][j];
+        }
+    }
     for (int& num: puzzle[row][col].hypos) {
         if (isPossible(puzzle, row, col, num)) {
-            puzzle[row][col].value = num;
+            // puzzle[row][col].value = num;
+            
+            // memcpy((&puzzle_copy), (&puzzle), sizeof(puzzle));
+            // PrintGridState(puzzle_copy);
+            // std::copy(std::begin(puzzle), std::end(puzzle), std::begin(puzzle_copy));
+            // std::cout << "MAKING NEW GUESS" << std::endl;
+            setValue(puzzle, row, col, num);
+            // std::cout << "AFTER MAKING NEW GUESS" << std::endl;
+            // std::cout << "PUZZLE:" << std::endl;
+            // PrintGridState(puzzle);
+            // std::cout << "PUZZLE COPY:" << std::endl;
+            // PrintGridState(puzzle_copy);
             _guesses++;
             if (SolveSudoku(puzzle, _guesses)) {
                 return true;
             }
-            puzzle[row][col].value = 0;
-        }   
+            // std::cout << "AFTER IF" << std::endl;
+            // // puzzle[row][col].value = 0;
+            // PrintGridState(puzzle);
+        }
+        // Reset puzzle
+        for (size_t i = 0; i < N; i++) {
+            for (size_t j = 0; j < N; j++) {
+                puzzle[i][j] = puzzle_copy[i][j];
+            }
+        }
     }
+    // memcpy((&puzzle), (&puzzle_copy), sizeof(puzzle));
+    
+    // std::cout << "BEFORE RETURN FALSE" << std::endl;
+    // PrintGridState(puzzle);
     return false;
+}
+
+/* Searches the grid to find the cell with fewest hypos */
+bool FindFewestHypoCell(Cell (&puzzle)[N][N], int &_row, int &_col) {
+    // row and col are passed by reference and are therefore assigned 
+    // "in place" in stack memory. This is where the current working
+    // cell is set.
+    
+    int fewest = 10;
+    bool ret = false;
+    for (int row = 0; row < N; row++) {
+        for (int col = 0; col < N; col++) {
+            
+            if (puzzle[row][col].value == 0) {
+                // std::cout << (puzzle[row][col].hypos.size() < fewest) << std::endl;
+                ret = true;
+                if (puzzle[row][col].hypos.size() < fewest) {
+                    fewest = puzzle[row][col].hypos.size();
+                    _row = row;
+                    _col = col;
+                    // std::cout << row << ":" << col << std::endl;
+                }
+            }   
+        }
+    }
+    return ret;
 }
 
 /* Searches the grid to find an entry that is still unassigned. */

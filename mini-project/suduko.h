@@ -9,6 +9,7 @@
 #include <chrono>
 #include <sstream>
 #include <set>
+#include <iterator>
 #define N 9
 
 typedef struct cell_coordinate {
@@ -36,8 +37,9 @@ void PrintGrid(Cell (&puzzle)[N][N]);
 void PrintGridState(Cell (&puzzle)[N][N]);
 void ParseFile(std::string filename, std::vector<std::string> &_puzzles);
 void BuildPuzzleGrid(std::string _puzzle, Cell (&puzzle)[N][N]);
-void PrintGridAsLine(Cell (&puzzle)[N][N], unsigned const int &_nr, unsigned const int _guesses);
+void PrintGridAsLine(Cell (&puzzle)[N][N]/* , unsigned const int &_nr, unsigned const int _guesses */);
 void PopulateUnitsAndPeers(Cell (&puzzle)[N][N], unsigned const int &_row, unsigned const int &_col);
+void BuildUnitsAndPeers(Cell (&puzzle)[N][N]);
 
 // For Constraint Propagation, Rule 1 and common
 void ConstraintPropagation(Cell (&puzzle)[N][N]);
@@ -65,6 +67,7 @@ bool SolveSudoku(Cell (&puzzle)[N][N], unsigned int &_guesses);
 bool UsedInRow(Cell (&puzzle)[N][N], int row, int num);
 bool UsedInCol(Cell (&puzzle)[N][N], int col, int num);
 bool UsedInBox(Cell (&puzzle)[N][N], int boxStartRow, int boxStartCol, int num);
+bool FindFewestHypoCell(Cell (&puzzle)[N][N], int &_row, int &_col);
 
 // Developer tools
 void printCell(Cell (&puzzle)[N][N], int row, int col);
