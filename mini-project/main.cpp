@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
         return 1;
     } 
     std::vector<std::string> puzzles;
-    Cell puzzle_template[9][9];
+    Cell_t puzzle_template[9][9];
     ParseFile(argv[1], puzzles);
     PopulateUnitsAndPeers(puzzle_template);
 

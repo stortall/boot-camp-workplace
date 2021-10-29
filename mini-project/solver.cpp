@@ -1,6 +1,6 @@
 #include "solver.h"
 
-Solver::Solver(Cell _puzzle[9][9], std::string _oneLinePuzzle) {
+Solver::Solver(Cell_t _puzzle[9][9], std::string _oneLinePuzzle) {
     // Copy puzzle template
     for(size_t i = 0; i < N; i++){
         for(size_t j = 0; j < N; j++){
@@ -55,14 +55,14 @@ void Solver::PropagatateConstraints() {
 
 /* Returns whether it will be legal to assign num to the given row,col location. 
  */
-bool Solver::isPossible(int row, int col, int num) {
+bool Solver::isPossible(unsigned const int &row, unsigned const int &col, unsigned const int &num) {
     return !UsedInRow(row, num) && !UsedInCol(col, num) &&
        !UsedInBox(row - row % 3 , col - col % 3, num);
 }
 
 /* Returns whether any assigned entry in the specified row matches 
    the given number. */
-bool Solver::UsedInRow(int row, int num) {
+bool Solver::UsedInRow(unsigned const int &row, unsigned const int &num) {
     for (int col = 0; col < N; col++) {
         if (puzzle[row][col].value == num) {
             return true;
@@ -73,7 +73,7 @@ bool Solver::UsedInRow(int row, int num) {
 
 /* Returns whether any assigned entry in the specified column matches 
    the given number. */
-bool Solver::UsedInCol(int col, int num) {
+bool Solver::UsedInCol(unsigned const int &col, unsigned const int &num) {
     for (int row = 0; row < N; row++) {
         if (puzzle[row][col].value == num) {
             return true;
@@ -84,7 +84,7 @@ bool Solver::UsedInCol(int col, int num) {
 
 /* Returns whether any assigned entry within the specified 3x3 box matches 
    the given number. */
-bool Solver::UsedInBox(int boxStartRow, int boxStartCol, int num) {
+bool Solver::UsedInBox(unsigned const int &boxStartRow, unsigned const int &boxStartCol, unsigned const int &num) {
     for (int row = 0; row < 3; row++) {
         for (int col = 0; col < 3; col++) {
             if (puzzle[row+boxStartRow][col+boxStartCol].value == num) {
@@ -95,7 +95,7 @@ bool Solver::UsedInBox(int boxStartRow, int boxStartCol, int num) {
     return false;
 }
 
-void Solver::DeleteHypo(int row, int col, int num) {
+void Solver::DeleteHypo(unsigned const int &row, unsigned const int &col, unsigned const int &num) {
     for (unsigned i = 0; i < puzzle[row][col].hypos.size(); i++) {
         if (puzzle[row][col].hypos[i] == num) {
             puzzle[row][col].hypos.erase(puzzle[row][col].hypos.begin() + i);
@@ -107,7 +107,7 @@ void Solver::DeleteHypo(int row, int col, int num) {
     }
 }
 
-void Solver::VisitPeers(int row, int col, int num) {
+void Solver::VisitPeers(unsigned const int &row, unsigned const int &col, unsigned const int &num) {
     // unsigned int peer_row, peer_col;
     for (Coord_t peers : puzzle[row][col].Peers) {
         if (IsValueInHypos(puzzle[peers.row][peers.col].hypos, num)) {
@@ -116,7 +116,7 @@ void Solver::VisitPeers(int row, int col, int num) {
     }
 }
 
-bool Solver::IsValueInHypos(std::vector<int> &hypos, int num) {
+bool Solver::IsValueInHypos(std::vector<int> &hypos, unsigned const int &num) {
     for (int& hypo: hypos) {
         if (hypo == num) {
             return true;
@@ -128,7 +128,7 @@ bool Solver::IsValueInHypos(std::vector<int> &hypos, int num) {
 /* For a given Cell, check if any of the possible numbers are unique in 
 any of the three Units.
  */
-void Solver::CheckUnits(int row, int col) {
+void Solver::CheckUnits(unsigned const int &row, unsigned const int &col) {
     int num;
     for (size_t i = 0; i < puzzle[row][col].hypos.size(); i++) {
         num = puzzle[row][col].hypos[i];
@@ -140,7 +140,7 @@ void Solver::CheckUnits(int row, int col) {
     }        
 }
 
-void Solver::setValue(int row, int col, int _num) {
+void Solver::setValue(unsigned const int &row, unsigned const int &col, int _num) {
     int num;
     if (_num == 0) {
         num = puzzle[row][col].hypos[0];
@@ -154,7 +154,7 @@ void Solver::setValue(int row, int col, int _num) {
     }
 }
 
-void Solver::RemoveFromPeers(int row, int col, int num) {
+void Solver::RemoveFromPeers(unsigned const int &row, unsigned const int &col, unsigned const int &num) {
     for (Coord_t peers : puzzle[row][col].Peers) {
         DeleteHypo(peers.row, peers.col, num);
     }
@@ -169,7 +169,7 @@ bool Solver::Search() {
         return true;
     }
     // Copy puzzle
-    Cell puzzle_copy[N][N];
+    Cell_t puzzle_copy[N][N];
     for(size_t i = 0; i < N; i++){
         for(size_t j = 0; j < N; j++){
             puzzle_copy[i][j] = puzzle[i][j];
@@ -196,7 +196,7 @@ bool Solver::Search() {
 /* For a given Cell defined by (_row, _col), returns true if Value (_num) is in 
  any of the peers vector Hypos.
  */
-bool Solver::IsHypoInRowPeers(int _row, int _col, int _num) {
+bool Solver::IsHypoInRowPeers(unsigned const int &_row, unsigned const int &_col, unsigned const int &_num) {
     for (int col = 0; col < N; col++) {
         if (col != _col) {
             if (std::count(puzzle[_row][col].hypos.begin(), puzzle[_row][col].hypos.end(), _num)) {
@@ -207,7 +207,7 @@ bool Solver::IsHypoInRowPeers(int _row, int _col, int _num) {
     return false;
 }
 
-bool Solver::IsHypoInColPeers(int _row, int _col, int _num) {
+bool Solver::IsHypoInColPeers(unsigned const int &_row, unsigned const int &_col, unsigned const int &_num) {
     for (int row = 0; row < N; row++) {
         if (row != _row) {
             if (std::count(puzzle[row][_col].hypos.begin(), puzzle[row][_col].hypos.end(), _num)) {
@@ -218,7 +218,7 @@ bool Solver::IsHypoInColPeers(int _row, int _col, int _num) {
     return false;
 }
 
-bool Solver::IsHypoInBoxPeers(int _row, int _col, int _num) {
+bool Solver::IsHypoInBoxPeers(unsigned const int &_row, unsigned const int &_col, unsigned const int &_num) {
     int boxStartRow = _row - _row % 3;
     int boxStartCol = _col - _col % 3;
     for (int row = 0; row < 3; row++) {

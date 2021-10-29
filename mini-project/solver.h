@@ -23,32 +23,32 @@ typedef struct struct_cell {
     std::vector<int> hypos;
     Coord_t Units[3][9];
     Coord_t Peers[20];
-}Cell;
+}Cell_t;
 
 class Solver {
     public:
         unsigned const int N = 9;
         unsigned int guesses;
-        Cell puzzle[9][9];
+        Cell_t puzzle[9][9];
 
-        Solver(Cell _puzzle[9][9], std::string _oneLinePuzzle);
+        Solver(Cell_t _puzzle[9][9], std::string _oneLinePuzzle);
         void BuildPuzzleGrid(std::string _oneLinePuzzle);
         void PropagatateConstraints();
-        bool isPossible(int row, int col, int num);
-        bool UsedInRow(int row, int num);
-        bool UsedInCol(int col, int num);
-        bool UsedInBox(int boxStartRow, int boxStartCol, int num);
-        void DeleteHypo(int row, int col, int num);
-        void VisitPeers(int row, int col, int num);
-        bool IsValueInHypos(std::vector<int> &hypos, int num);
-        void CheckUnits(int row, int col);
-        void setValue(int row, int col, int _num=0);
-        void RemoveFromPeers(int row, int col, int num);
+        bool isPossible(unsigned const int &row, unsigned const int &col, unsigned const int &num);
+        bool UsedInRow(unsigned const int &row, unsigned const int &num);
+        bool UsedInCol(unsigned const int &col, unsigned const int &num);
+        bool UsedInBox(unsigned const int &boxStartRow, unsigned const int &boxStartCol, unsigned const int &num);
+        void DeleteHypo(unsigned const int &row, unsigned const int &col, unsigned const int &num);
+        void VisitPeers(unsigned const int &row, unsigned const int &col, unsigned const int &num);
+        bool IsValueInHypos(std::vector<int> &hypos, unsigned const int &num);
+        void CheckUnits(unsigned const int &row, unsigned const int &col);
+        void setValue(unsigned const int &row, unsigned const int &col, int _num=0);
+        void RemoveFromPeers(unsigned const int &row, unsigned const int &col, unsigned const int &num);
 
         bool Search();
-        bool IsHypoInRowPeers(int _row, int _col, int _num);
-        bool IsHypoInColPeers(int _row, int _col, int _num);
-        bool IsHypoInBoxPeers(int _row, int _col, int _num);
+        bool IsHypoInRowPeers(unsigned const int &_row, unsigned const int &_col, unsigned const int &_num);
+        bool IsHypoInColPeers(unsigned const int &_row, unsigned const int &_col, unsigned const int &_num);
+        bool IsHypoInBoxPeers(unsigned const int &_row, unsigned const int &_col, unsigned const int &_num);
         bool FindFewestHypoCell(int &_row, int &_col);
 
         void PrintGridAsLine();

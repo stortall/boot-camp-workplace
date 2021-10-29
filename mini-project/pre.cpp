@@ -8,7 +8,7 @@ void ParseFile(std::string _filename, std::vector<std::string> &_puzzles) {
     }
 }
 
-void PopulateUnitsAndPeers(Cell (&puzzle)[9][9]) {
+void PopulateUnitsAndPeers(Cell_t (&puzzle)[9][9]) {
     for (unsigned int _row = 0; _row < 9; _row++) {
         for (unsigned int _col = 0; _col < 9; _col++) {
             unsigned int counter = 0;
