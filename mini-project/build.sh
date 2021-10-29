@@ -1,2 +1,2 @@
 #!/bin/bash
-g++ main.cpp suduko.cpp parse_dev.cpp 
+g++ main.cpp solver.cpp parse_dev.cpp 

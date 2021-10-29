@@ -1,4 +1,4 @@
-#include "suduko.h"
+#include "parse_dev.h"
 
 void ParseFile(std::string _filename, std::vector<std::string> &_puzzles) {
     std::ifstream file(_filename);
@@ -8,35 +8,35 @@ void ParseFile(std::string _filename, std::vector<std::string> &_puzzles) {
     }
 }
 
-void BuildPuzzleGrid(std::string _puzzle, Cell (&puzzle)[N][N]) {
-    int col = 0;
-    int row = 0;
-    for (size_t i = 0; i < _puzzle.length(); i++) {
-        if (col >= 9) {
-            col = 0;
-            row++;
-        } 
-        char character = _puzzle[i];
-        if (character > '0' and character <= '9') {
-            puzzle[row][col].value = _puzzle[i] -'0';
-        } else {
-            puzzle[row][col].value = 0;
-        }
-        puzzle[row][col].hypos = {1,2,3,4,5,6,7,8,9};
-        PopulateUnitsAndPeers(puzzle, row, col);
-        col++;
-    }
-}
+// void BuildPuzzleGrid(std::string _puzzle, Cell (&puzzle)[N][N]) {
+//     int col = 0;
+//     int row = 0;
+//     for (size_t i = 0; i < _puzzle.length(); i++) {
+//         if (col >= 9) {
+//             col = 0;
+//             row++;
+//         } 
+//         char character = _puzzle[i];
+//         if (character > '0' and character <= '9') {
+//             puzzle[row][col].value = _puzzle[i] -'0';
+//         } else {
+//             puzzle[row][col].value = 0;
+//         }
+//         puzzle[row][col].hypos = {1,2,3,4,5,6,7,8,9};
+//         // PopulateUnitsAndPeers(puzzle, row, col);
+//         col++;
+//     }
+// }
 
-void BuildUnitsAndPeers(Cell (&puzzle)[N][N]) {
-    for (unsigned int row = 0; row < N; row++) {
-        for (unsigned int col = 0; col < N; col++) {
+void BuildUnitsAndPeers(Cell (&puzzle)[9][9]) {
+    for (unsigned int row = 0; row < 9; row++) {
+        for (unsigned int col = 0; col < 9; col++) {
             PopulateUnitsAndPeers(puzzle, row, col);
         }
     }
 }
 
-void PopulateUnitsAndPeers(Cell (&puzzle)[N][N], unsigned const int &_row, unsigned const int &_col) {
+void PopulateUnitsAndPeers(Cell (&puzzle)[9][9], unsigned const int &_row, unsigned const int &_col) {
     unsigned int counter = 0;
     std::set<std::string> peers_set;
     // Row unit
@@ -76,94 +76,94 @@ void PopulateUnitsAndPeers(Cell (&puzzle)[N][N], unsigned const int &_row, unsig
     }
 }
 
-void PrintGrid(Cell (&puzzle)[N][N]) {
-    for (int row = 0; row < N; row++) {
-        for (int col = 0; col < N; col++) {
-            std::cout<<puzzle[row][col].value<<"  ";
+// void PrintGrid(Cell (&puzzle)[N][N]) {
+//     for (int row = 0; row < N; row++) {
+//         for (int col = 0; col < N; col++) {
+//             std::cout<<puzzle[row][col].value<<"  ";
 
-            if (col == 2 || col == 5) {
-                std::cout << "|  ";
-            }
-        }
-        std::cout << "\n";
-        if (row == 2 || row == 5) {
-            std::cout << "---------+-----------+---------\n";
-        }
-    }
-    std::cout<<std::endl;
-}
+//             if (col == 2 || col == 5) {
+//                 std::cout << "|  ";
+//             }
+//         }
+//         std::cout << "\n";
+//         if (row == 2 || row == 5) {
+//             std::cout << "---------+-----------+---------\n";
+//         }
+//     }
+//     std::cout<<std::endl;
+// }
 
-void PrintGridAsLine(Cell (&puzzle)[N][N]) {
-    for (int row = 0; row < N; row++) {
-        for (int col = 0; col < N; col++) {
-            if (puzzle[row][col].value > 0 && puzzle[row][col].value <= 9) {
-                std::cout << puzzle[row][col].value;
-            } else {
-                std::cout << '.';
-            }
+// void PrintGridAsLine(Cell (&puzzle)[N][N]) {
+//     for (int row = 0; row < N; row++) {
+//         for (int col = 0; col < N; col++) {
+//             if (puzzle[row][col].value > 0 && puzzle[row][col].value <= 9) {
+//                 std::cout << puzzle[row][col].value;
+//             } else {
+//                 std::cout << '.';
+//             }
             
-        }
-    }
-    std::cout<<std::endl;
-}
+//         }
+//     }
+//     std::cout<<std::endl;
+// }
 
-void PrintGridState(Cell (&puzzle)[N][N]) {
-    unsigned int max_size = 1; 
-    unsigned int hypo_size;
-    for (int row = 0; row < N; row++) {
-        for (int col = 0; col < N; col++) {
-            hypo_size = puzzle[row][col].hypos.size();
-            if (hypo_size > max_size) {
-                max_size = hypo_size;
-            }
-        }
-    }
-    for (int row = 0; row < N; row++) {
-        for (int col = 0; col < N; col++) {
-            if (puzzle[row][col].value == 0) {
-                for (size_t i = 0; i < max_size; i++) {
-                    if (i < puzzle[row][col].hypos.size()) {
-                        std::cout<<puzzle[row][col].hypos[i];
-                    } else {
-                        std::cout<< " ";
-                    }
-                }
-                std::cout<<"  ";
-            } else {
-                std::cout<<puzzle[row][col].value;
-                for (size_t i = 0; i < max_size-1; i++){
-                    std::cout<< " ";
-                }
-                std::cout<<"  ";
-            }
-            if (col == 2 || col == 5) {
-                std::cout << "|  ";
-            }
-        }
-        std::cout << "\n";
-        std::string dashes;
-        dashes.insert(0, (max_size-1)*3, '-');
-        if (row == 2 || row == 5) {
-            std::cout << "---------" << dashes << "+-----------" << dashes << "+---------" << dashes << "\n";
-        }
-    }
-    std::cout<<std::endl;
-}
+// void PrintGridState(Cell (&puzzle)[N][N]) {
+//     unsigned int max_size = 1; 
+//     unsigned int hypo_size;
+//     for (int row = 0; row < N; row++) {
+//         for (int col = 0; col < N; col++) {
+//             hypo_size = puzzle[row][col].hypos.size();
+//             if (hypo_size > max_size) {
+//                 max_size = hypo_size;
+//             }
+//         }
+//     }
+//     for (int row = 0; row < N; row++) {
+//         for (int col = 0; col < N; col++) {
+//             if (puzzle[row][col].value == 0) {
+//                 for (size_t i = 0; i < max_size; i++) {
+//                     if (i < puzzle[row][col].hypos.size()) {
+//                         std::cout<<puzzle[row][col].hypos[i];
+//                     } else {
+//                         std::cout<< " ";
+//                     }
+//                 }
+//                 std::cout<<"  ";
+//             } else {
+//                 std::cout<<puzzle[row][col].value;
+//                 for (size_t i = 0; i < max_size-1; i++){
+//                     std::cout<< " ";
+//                 }
+//                 std::cout<<"  ";
+//             }
+//             if (col == 2 || col == 5) {
+//                 std::cout << "|  ";
+//             }
+//         }
+//         std::cout << "\n";
+//         std::string dashes;
+//         dashes.insert(0, (max_size-1)*3, '-');
+//         if (row == 2 || row == 5) {
+//             std::cout << "---------" << dashes << "+-----------" << dashes << "+---------" << dashes << "\n";
+//         }
+//     }
+//     std::cout<<std::endl;
+// }
 
-void printCell(Cell (&puzzle)[N][N], int row, int col) {
-    std::cout << row << ":" << col << ", ";
-    std::cout << "Value: " << puzzle[row][col].value << ", ";
-    std::cout << "hypos: ";
-    for (unsigned i=0; i<puzzle[row][col].hypos.size(); i++) {
-        std::cout << ' ' << puzzle[row][col].hypos.at(i);
-    }
-    std::cout << std::endl;
-}
+// void printCell(Cell (&puzzle)[N][N], int row, int col) {
+//     std::cout << row << ":" << col << ", ";
+//     std::cout << "Value: " << puzzle[row][col].value << ", ";
+//     std::cout << "hypos: ";
+//     for (unsigned i=0; i<puzzle[row][col].hypos.size(); i++) {
+//         std::cout << ' ' << puzzle[row][col].hypos.at(i);
+//     }
+//     std::cout << std::endl;
+// }
 
-void printCells(Cell (&puzzle)[N][N]) {
-    for (int row = 0; row < N; row++) {
-        for (int col = 0; col < N; col++) {
-            printCell(puzzle, row, col);
-        }
-    }
-}
+// void printCells(Cell (&puzzle)[N][N]) {
+//     for (int row = 0; row < N; row++) {
+//         for (int col = 0; col < N; col++) {
+//             printCell(puzzle, row, col);
+//         }
+//     }
+// }
