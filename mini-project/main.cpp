@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
         solver.PrintGridAsLine();
         // PrintGridState(puzzle);
 
-        if (solver.Search(guesses) == true) {
+        if (solver.Search() == true) {
             std::cout<<"Search with " << solver.guesses << " numbers guessed:"<<std::endl;
             solver.PrintGridAsLine();
             // PrintGrid(puzzle);
