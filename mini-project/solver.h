@@ -31,11 +31,8 @@ class Solver {
         unsigned int guesses;
         Cell puzzle[9][9];
 
-
         Solver(Cell _puzzle[9][9], std::string _oneLinePuzzle);
         void BuildPuzzleGrid(std::string _oneLinePuzzle);
-        void PrintGridAsLine();
-        void CleanHypoValues();
         void PropagatateConstraints();
         bool isPossible(int row, int col, int num);
         bool UsedInRow(int row, int num);
@@ -53,17 +50,10 @@ class Solver {
         bool IsHypoInColPeers(int _row, int _col, int _num);
         bool IsHypoInBoxPeers(int _row, int _col, int _num);
         bool FindFewestHypoCell(int &_row, int &_col);
+
+        void PrintGridAsLine();
+        void PrintGrid();
+        void PrintGridState();
 };
-
-
-
-// void CleanHypoValues(Cell (&puzzle)[N][N]);
-// bool IsValueInHypos(std::vector<int> &hypos, int num);
-
-
-// For search
-
-
-
 
 #endif

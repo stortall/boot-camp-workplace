@@ -24,34 +24,9 @@ void Solver::BuildPuzzleGrid(std::string _oneLinePuzzle) {
             puzzle[row][col].value = _oneLinePuzzle[i] -'0';
         } else {
             puzzle[row][col].value = 0;
+            puzzle[row][col].hypos = {1,2,3,4,5,6,7,8,9};
         }
-        puzzle[row][col].hypos = {1,2,3,4,5,6,7,8,9};
         col++;
-    }
-}
-
-void Solver::PrintGridAsLine() {
-    for (int row = 0; row < N; row++) {
-        for (int col = 0; col < N; col++) {
-            if (puzzle[row][col].value > 0 && puzzle[row][col].value <= 9) {
-                std::cout << puzzle[row][col].value;
-            } else {
-                std::cout << '.';
-            }
-            
-        }
-    }
-    std::cout<<std::endl;
-}
-
-void Solver::CleanHypoValues() {
-    int row, col;
-    for (row = 0; row < N; row++) {
-        for (col = 0; col < N; col++) {
-            if (puzzle[row][col].value != 0) {
-                puzzle[row][col].hypos.clear();
-            }
-        }
     }
 }
 
@@ -280,7 +255,76 @@ bool Solver::FindFewestHypoCell(int &_row, int &_col) {
     return ret;
 }
 
+void Solver::PrintGridAsLine() {
+    for (int row = 0; row < N; row++) {
+        for (int col = 0; col < N; col++) {
+            if (puzzle[row][col].value > 0 && puzzle[row][col].value <= 9) {
+                std::cout << puzzle[row][col].value;
+            } else {
+                std::cout << '.';
+            }
+            
+        }
+    }
+    std::cout<<std::endl;
+}
 
+void Solver::PrintGrid() {
+    for (int row = 0; row < N; row++) {
+        for (int col = 0; col < N; col++) {
+            std::cout<<puzzle[row][col].value<<"  ";
 
+            if (col == 2 || col == 5) {
+                std::cout << "|  ";
+            }
+        }
+        std::cout << "\n";
+        if (row == 2 || row == 5) {
+            std::cout << "---------+-----------+---------\n";
+        }
+    }
+    std::cout<<std::endl;
+}
 
-
+void Solver::PrintGridState() {
+    unsigned int max_size = 1; 
+    unsigned int hypo_size;
+    for (int row = 0; row < N; row++) {
+        for (int col = 0; col < N; col++) {
+            hypo_size = puzzle[row][col].hypos.size();
+            if (hypo_size > max_size) {
+                max_size = hypo_size;
+            }
+        }
+    }
+    for (int row = 0; row < N; row++) {
+        for (int col = 0; col < N; col++) {
+            if (puzzle[row][col].value == 0) {
+                for (size_t i = 0; i < max_size; i++) {
+                    if (i < puzzle[row][col].hypos.size()) {
+                        std::cout<<puzzle[row][col].hypos[i];
+                    } else {
+                        std::cout<< " ";
+                    }
+                }
+                std::cout<<"  ";
+            } else {
+                std::cout<<puzzle[row][col].value;
+                for (size_t i = 0; i < max_size-1; i++){
+                    std::cout<< " ";
+                }
+                std::cout<<"  ";
+            }
+            if (col == 2 || col == 5) {
+                std::cout << "|  ";
+            }
+        }
+        std::cout << "\n";
+        std::string dashes;
+        dashes.insert(0, (max_size-1)*3, '-');
+        if (row == 2 || row == 5) {
+            std::cout << "---------" << dashes << "+-----------" << dashes << "+---------" << dashes << "\n";
+        }
+    }
+    std::cout<<std::endl;
+}
