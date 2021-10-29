@@ -37,7 +37,7 @@ void PrintGrid(Cell (&puzzle)[N][N]);
 void PrintGridState(Cell (&puzzle)[N][N]);
 void ParseFile(std::string filename, std::vector<std::string> &_puzzles);
 void BuildPuzzleGrid(std::string _puzzle, Cell (&puzzle)[N][N]);
-void PrintGridAsLine(Cell (&puzzle)[N][N]/* , unsigned const int &_nr, unsigned const int _guesses */);
+void PrintGridAsLine(Cell (&puzzle)[N][N]);
 void PopulateUnitsAndPeers(Cell (&puzzle)[N][N], unsigned const int &_row, unsigned const int &_col);
 void BuildUnitsAndPeers(Cell (&puzzle)[N][N]);
 

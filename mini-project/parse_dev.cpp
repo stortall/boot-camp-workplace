@@ -93,14 +93,7 @@ void PrintGrid(Cell (&puzzle)[N][N]) {
     std::cout<<std::endl;
 }
 
-void PrintGridAsLine(Cell (&puzzle)[N][N]/* , unsigned const int &_nr, unsigned const int _guesses */) {
-    // std::cout << "Puzzle " << _nr;
-    // if(_guesses == 0) {
-    //     std::cout << " solved w/o search (only Const. Prop.): \t";
-    // } else {
-    //     std::cout << " solved after " << _guesses << " guesses: \t\t\t";
-    // }
-    
+void PrintGridAsLine(Cell (&puzzle)[N][N]) {
     for (int row = 0; row < N; row++) {
         for (int col = 0; col < N; col++) {
             if (puzzle[row][col].value > 0 && puzzle[row][col].value <= 9) {
