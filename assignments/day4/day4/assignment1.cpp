@@ -1,6 +1,7 @@
 #include "assignment1.h"
 
-Customer::Customer() {}
-Customer::Customer(std::string _name) {
-    Name = _name;
+Customer::Customer(std::string _name, std::string _email) {
+    name = _name;
+    email = _email;
 }
+
