@@ -21,6 +21,7 @@ public:
     std::string email;
     // Methods
     Customer(std::string _name, std::string _email): name(_name), email(_email) {};
+    std::string GetName();
 };
 
 class Part : public IdObject {
@@ -83,6 +84,15 @@ public:
 int main() {
     Shop shop = Shop("Bosses");
     std::cout << "Adding new customer with id: " << shop.AddCustomer("Johan", "johan@mail.com") << std::endl;
+    std::cout << "Adding new customer with id: " << shop.AddCustomer("Carl", "carl@mail.com") << std::endl;
     std::cout << "Adding new part with id: " << shop.AddPart("Disc Break", 600) << std::endl;
+    std::cout << "Adding new part with id: " << shop.AddPart("Break Caliper", 800) << std::endl;
+    std::cout << "Adding new part with id: " << shop.AddPart("Alu Rim", 1000) << std::endl;
+
+    std::cout << "Adding new service with id: " << shop.AddService("Break repair", "Replacing caliper and discs.", 1) << std::endl;
+
+    // Customer* johanCpy =  nullptr;//&shop.customers[0];
+
+    std::cout << "cus " << shop.GetCustomerFromId(0)->GetName() << std::endl;
     
 }

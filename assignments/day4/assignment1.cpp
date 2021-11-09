@@ -8,6 +8,10 @@ unsigned int IdObject::GetId() {
     return id;
 }
 
+std::string Customer::GetName() {
+    return this->name;
+}
+
 void ServiceRecord::AddPart(unsigned int _part_id) {
     parts.push_back(_part_id);
 }
@@ -42,4 +46,14 @@ int Shop::AddService(std::string _title, std::string _description, unsigned int 
     new_instance.SetId(services.size());
     services.push_back(new_instance);
     return new_instance.GetId();
+}
+
+Customer* Shop::GetCustomerFromId(unsigned const int id) {
+    unsigned int index;
+    for (size_t i=0; i<customers.size(); i++) {
+        if (customers[i].GetId() == id) {
+            index = i;
+        }
+    }
+    return &(customers[index]);
 }
